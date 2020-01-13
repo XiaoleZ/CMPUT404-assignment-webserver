@@ -1,5 +1,7 @@
 #  coding: utf-8 
 import socketserver
+import http.server
+import os
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -26,14 +28,26 @@ import socketserver
 
 # try: curl -v -X GET http://127.0.0.1:8080/
 
+#current os path
+PATH = os.getcwd() + "/www/"
+INDEX = "index.html"
+BASE = "base.css"
+DEEP_FOLDER = "deep/"
+DEEP = "deep.css"
 
 class MyWebServer(socketserver.BaseRequestHandler):
     
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("OK",'utf-8'))
-
+        #self.request.sendall(bytearray("OK",'utf-8'))
+         
+        f = open( os.path.join(PATH, INDEX), "r")
+        data = f.read()
+        f.close()
+        self.request.sendall(b"HTTP/1.1 \r\n" + b"Content-Type: text/html\r\n"+data.encode('utf-8'))
+    
+        
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
 
