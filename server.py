@@ -29,8 +29,8 @@ import os
 # try: curl -v -X GET http://127.0.0.1:8080/
 
 #current os path
-PATH = os.getcwd() + "/www"
-INDEX = "index.html"
+PATH = os.getcwd() + "/www/"
+INDEX = "/index.html"
 BASE = "base.css"
 DEEP_FOLDER = "deep/"
 DEEP = "deep.css"
@@ -41,21 +41,25 @@ class MyWebServer(socketserver.BaseRequestHandler):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
         #self.request.sendall(bytearray("OK",'utf-8'))
-        request_path = str(self.data).split(' ')[1]
-        print(request_path)
-        self.response(request_path)
+        if self.data != b'':
+            print(self.data)
+            request_path = str(self.data).split(' ')[1]
+            print(request_path)
+            self.response(request_path)
 
     def response(self,path):      
      
         try:
             if  os.path.join(PATH, path).endswith('.html') or path == '/' :
-                f = open( os.path.join(PATH, INDEX), "r")
+                if path == '/':
+                    path = INDEX
+                f = open( os.path.join(PATH, path[1:]), "r")
                 data = f.read()
                 t = 'html'
                 f.close()
                 self.s_200(t,data)
             elif  os.path.join(PATH, path).endswith('.css'):
-                f = open( os.path.join(PATH, BASE), "r")
+                f = open( os.path.join(PATH, path[1:]), "r")
                 data = f.read()
                 t = 'css'
                 f.close()
