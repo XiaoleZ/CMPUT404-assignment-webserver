@@ -30,7 +30,7 @@ import os
 
 #current os path
 PATH = os.getcwd() + "/www/"
-INDEX = "/index.html"
+INDEX = "index.html"
 BASE = "base.css"
 DEEP_FOLDER = "deep/"
 DEEP = "deep.css"
@@ -50,9 +50,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
     def response(self,path):      
      
         try:
-            if  os.path.join(PATH, path).endswith('.html') or path == '/' :
-                if path == '/':
-                    path = INDEX
+            if  os.path.join(PATH, path).endswith('.html') or path == '/' or path == '/deep/'    :
+                if path == '/' or path == '/deep/':
+                    path = path + INDEX
                 f = open( os.path.join(PATH, path[1:]), "r")
                 data = f.read()
                 t = 'html'
@@ -64,7 +64,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 t = 'css'
                 f.close()
                 self.s_200(t,data)
-            elif path == '/favicon.ico':       
+            else:       
                 self.s_404()      
         except Exception as e:
             print(e)
