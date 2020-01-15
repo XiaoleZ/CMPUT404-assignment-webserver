@@ -29,7 +29,7 @@ import os
 # try: curl -v -X GET http://127.0.0.1:8080/
 
 #current os path
-PATH = os.getcwd() + "/www/"
+PATH = os.getcwd() + "/www"
 INDEX = "index.html"
 BASE = "base.css"
 DEEP_FOLDER = "deep/"
@@ -41,12 +41,30 @@ class MyWebServer(socketserver.BaseRequestHandler):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
         #self.request.sendall(bytearray("OK",'utf-8'))
-         
-        f = open( os.path.join(PATH, INDEX), "r")
-        data = f.read()
-        f.close()
-        self.request.sendall(b"HTTP/1.1 \r\n" + b"Content-Type: text/html\r\n"+data.encode('utf-8'))
-    
+        request_path = str(self.data).split(' ')[1]
+        print(request_path)
+        self.response(request_path)
+
+    def response(self,path):
+        
+        print(path)
+        try:
+            if  os.path.join(PATH, path).endswith('.html') or path == '/' :
+                f = open( os.path.join(PATH, INDEX), "r")
+                data = f.read()
+                t = 'html'
+                f.close()
+            elif  os.path.join(PATH, path).endswith('.css'):
+                f = open( os.path.join(PATH, BASE), "r")
+                data = f.read()
+                t = 'css'
+                f.close()
+        
+            self.request.sendall(bytearray("HTTP/1.1 200 OK\r\n" + 
+            "Content-Type: text/"+t+ "\r\n"+
+            data + "\r\n", 'utf-8'))
+        except:
+            print("exception here\n")
         
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
