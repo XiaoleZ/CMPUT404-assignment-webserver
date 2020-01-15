@@ -61,17 +61,23 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 f.close()
                 self.s_200(t,data)
             elif path == '/favicon.ico':       
-                print("here\n")
                 self.s_404()      
         except Exception as e:
             print(e)
     
     def s_200(self,t,data):
         self.request.sendall(bytearray("HTTP/1.1 200 OK\r\n" + 
-            "Content-Type: text/"+t+ "\r\n  Connection: close\r\n"+
-            data + "\r\n\r\n", 'utf-8'))
+            "Content-Type: text/"+t+ "\r\n\r\n"+
+            data , 'utf-8'))
     def s_404(self):
-        self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n\r\n", 'utf-8')) 
+        #print("here\n")
+        self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n"
+         "Content-Type: text/html\r\n\r\n" +
+        "<body>\
+        <h1>Error response</h1> \
+        <p>Error code 404.</p> \
+        <p>Message: File not found.</p>\
+        </body> ", 'utf-8')) 
 
         
 if __name__ == "__main__":
