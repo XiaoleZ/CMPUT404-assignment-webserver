@@ -45,26 +45,34 @@ class MyWebServer(socketserver.BaseRequestHandler):
         print(request_path)
         self.response(request_path)
 
-    def response(self,path):
-        
-        print(path)
+    def response(self,path):      
+     
         try:
             if  os.path.join(PATH, path).endswith('.html') or path == '/' :
                 f = open( os.path.join(PATH, INDEX), "r")
                 data = f.read()
                 t = 'html'
                 f.close()
+                self.s_200(t,data)
             elif  os.path.join(PATH, path).endswith('.css'):
                 f = open( os.path.join(PATH, BASE), "r")
                 data = f.read()
                 t = 'css'
                 f.close()
-        
-            self.request.sendall(bytearray("HTTP/1.1 200 OK\r\n" + 
-            "Content-Type: text/"+t+ "\r\n"+
-            data + "\r\n", 'utf-8'))
-        except:
-            print("exception here\n")
+                self.s_200(t,data)
+            elif path == '/favicon.ico':       
+                print("here\n")
+                self.s_404()      
+        except Exception as e:
+            print(e)
+    
+    def s_200(self,t,data):
+        self.request.sendall(bytearray("HTTP/1.1 200 OK\r\n" + 
+            "Content-Type: text/"+t+ "\r\n  Connection: close\r\n"+
+            data + "\r\n\r\n", 'utf-8'))
+    def s_404(self):
+        self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n\r\n", 'utf-8')) 
+
         
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
