@@ -31,9 +31,6 @@ import os
 #current os path
 PATH = os.getcwd() + "/www/"
 INDEX = "index.html"
-BASE = "base.css"
-DEEP_FOLDER = "deep/"
-DEEP = "deep.css"
 
 class MyWebServer(socketserver.BaseRequestHandler):
     
@@ -42,28 +39,37 @@ class MyWebServer(socketserver.BaseRequestHandler):
         print ("Got a request of: %s\n" % self.data)
         #self.request.sendall(bytearray("OK",'utf-8'))
         if self.data != b'':
-            print(self.data)
+            request_method = str(self.data).split(' ')[0]
             request_path = str(self.data).split(' ')[1]
-            print(request_path)
-            self.response(request_path)
+            print(request_method)
+            if request_method == "b'GET":
+                print(request_path)
+                self.response(request_path)
+            else:
+                self.s_405()
 
-    def response(self,path):      
-     
+
+    def response(self,path):     
         try:
-            if  os.path.join(PATH, path).endswith('.html') or path == '/' or path == '/deep/'    :
-                if path == '/' or path == '/deep/':
-                    path = path + INDEX
+            if  os.path.join(PATH, path).endswith('.html') or (os.path.isdir(os.path.join(PATH, path.strip('/'))) and path.endswith('/')):
+                if os.path.isdir(os.path.join(PATH, path.strip('/'))):
+                    path = path + INDEX 
                 f = open( os.path.join(PATH, path[1:]), "r")
                 data = f.read()
                 t = 'html'
                 f.close()
                 self.s_200(t,data)
-            elif  os.path.join(PATH, path).endswith('.css'):
-                f = open( os.path.join(PATH, path[1:]), "r")
-                data = f.read()
-                t = 'css'
-                f.close()
-                self.s_200(t,data)
+            elif os.path.join(PATH, path).endswith('.css'):
+                try:
+                    f = open( os.path.join(PATH, path[1:]), "r")
+                    data = f.read()
+                    t = 'css'
+                    f.close()
+                    self.s_200(t,data)
+                except:
+                    self.s_404()  
+            elif os.path.isdir(os.path.join(PATH, path.strip('/'))) and not path.endswith('/'):
+                self.s_301(path)
             else:       
                 self.s_404()      
         except Exception as e:
@@ -73,6 +79,11 @@ class MyWebServer(socketserver.BaseRequestHandler):
         self.request.sendall(bytearray("HTTP/1.1 200 OK\r\n" + 
             "Content-Type: text/"+t+ "\r\n\r\n"+
             data , 'utf-8'))
+
+    def s_301(self,path):
+        #print("HTTP/1.1 301 Move Permanently\r\nLocation: " + path+ "/\r\n\r\n")
+        self.request.sendall(bytearray("HTTP/1.1 301 Move Permanently\r\n"  , 'utf-8')) 
+
     def s_404(self):
         #print("here\n")
         self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n"
@@ -81,6 +92,15 @@ class MyWebServer(socketserver.BaseRequestHandler):
         <h1>Error response</h1> \
         <p>Error code 404.</p> \
         <p>Message: File not found.</p>\
+        </body> ", 'utf-8')) 
+
+    def s_405(self):
+        self.request.sendall(bytearray("HTTP/1.1 405 Method Not Allowed\r\n"
+         "Content-Type: text/html\r\n\r\n" +
+        "<body>\
+        <h1>Error response</h1> \
+        <p>Error code 405.</p> \
+        <p>Message: Method Not Allowed.</p>\
         </body> ", 'utf-8')) 
 
         
