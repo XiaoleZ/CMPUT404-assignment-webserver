@@ -38,6 +38,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
         #self.request.sendall(bytearray("OK",'utf-8'))
+      
         if self.data != b'':
             request_method = str(self.data).split(' ')[0]
             request_path = str(self.data).split(' ')[1]
@@ -46,45 +47,46 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 print(request_path)
                 self.response(request_path)
             else:
-                self.s_405()
+                self.status_405()
 
 
     def response(self,path):     
         try:
             if  os.path.join(PATH, path).endswith('.html') or (os.path.isdir(os.path.join(PATH, path.strip('/'))) and path.endswith('/')):
+                
                 if os.path.isdir(os.path.join(PATH, path.strip('/'))):
                     path = path + INDEX 
                 f = open( os.path.join(PATH, path[1:]), "r")
                 data = f.read()
                 t = 'html'
                 f.close()
-                self.s_200(t,data)
+                self.status_200(t,data)
             elif os.path.join(PATH, path).endswith('.css'):
                 try:
                     f = open( os.path.join(PATH, path[1:]), "r")
                     data = f.read()
                     t = 'css'
                     f.close()
-                    self.s_200(t,data)
+                    self.status_200(t,data)
                 except:
-                    self.s_404()  
+                    self.status_404()  
             elif os.path.isdir(os.path.join(PATH, path.strip('/'))) and not path.endswith('/'):
-                self.s_301(path)
+                self.status_301(path)
             else:       
-                self.s_404()      
+                self.status_404()      
         except Exception as e:
             print(e)
     
-    def s_200(self,t,data):
+    def status_200(self,mimetypes,data):
         self.request.sendall(bytearray("HTTP/1.1 200 OK\r\n" + 
-            "Content-Type: text/"+t+ "\r\n\r\n"+
+            "Content-Type: text/"+mimetypes+ "\r\n\r\n"+
             data , 'utf-8'))
 
-    def s_301(self,path):
-        #print("HTTP/1.1 301 Move Permanently\r\nLocation: " + path+ "/\r\n\r\n")
-        self.request.sendall(bytearray("HTTP/1.1 301 Move Permanently\r\n"  , 'utf-8')) 
+    def status_301(self,path):
+        print("HTTP/1.1 301 Move Permanently\r\nLocation: http://127.0.0.1:8080"+path +"/\r\nContent-Type: text/html\r\n")
+        self.request.sendall(bytearray("HTTP/1.1 301 Move Permanently\r\nRedirected to :"+ path +"/\r\nContent-Type: text/html\r\n\r\n"  , 'utf-8')) 
 
-    def s_404(self):
+    def status_404(self):
         #print("here\n")
         self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\n"
          "Content-Type: text/html\r\n\r\n" +
@@ -94,7 +96,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         <p>Message: File not found.</p>\
         </body> ", 'utf-8')) 
 
-    def s_405(self):
+    def status_405(self):
         self.request.sendall(bytearray("HTTP/1.1 405 Method Not Allowed\r\n"
          "Content-Type: text/html\r\n\r\n" +
         "<body>\
