@@ -64,6 +64,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 self.status_405()
 
     def response(self, path):
+        """"Take the response when the method is GET"""
         try:
             path_for_dir = os.path.join(PATH, path.strip('/'))
 
@@ -96,18 +97,21 @@ class MyWebServer(socketserver.BaseRequestHandler):
             print(e)
 
     def status_200(self, mimetypes, data):
+        """Send the 200 ok Message"""
         self.request.sendall(bytearray('HTTP/1.1 200 OK\r\n' +
                                        'Content-Type: text/' + mimetypes +
                                        '\r\n\r\n' +
                                        data, 'utf-8'))
 
     def status_301(self, path):
+        """Send 301 Move Permanently Message"""
         self.request.sendall(bytearray('HTTP/1.1 301 Move Permanently\r\n' +
                                        'Redirected to :' + path + '/\r\n' +
                                        'Content-Type: text/html\r\n\r\n',
                                        'utf-8'))
 
     def status_404(self):
+        """Send 404 Page Not Found Message"""
         self.request.sendall(bytearray('HTTP/1.1 404 Not Found\r\n'
                                        'Content-Type: text/html\r\n\r\n' +
                                        '<body>'
@@ -117,6 +121,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                                        '</body> ', 'utf-8'))
 
     def status_405(self):
+        """Send 405 Method Not Allowed Message"""
         self.request.sendall(bytearray('HTTP/1.1 405 Method Not Allowed\r\n'
                                        'Content-Type: text/html\r\n\r\n' +
                                        '<body>'
